@@ -73,7 +73,9 @@ def stitch_all(path_in, path_out):
         cur_offset += second_image.size[1]
         first_image = second_image
     mkdir_if_not_exist(path_out)
-    final_image.save(f"{path_out}/out.png")
+    actual_final_image = Image.new(final_image.mode, (final_image.size[0], cur_offset))
+    actual_final_image.paste(final_image)
+    actual_final_image.save(f"{path_out}/out.png")
     
         
 
