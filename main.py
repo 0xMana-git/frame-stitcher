@@ -33,17 +33,20 @@ def extract_images(path_in, path_out):
     success, image = vidcap.read()
     success = True
     while success:
-        vidcap.set(cv2.CAP_PROP_POS_MSEC,(count*1000))    # added this line 
-        success,image = vidcap.read()
-        image = Image.fromarray(image)
-        #print ('Read a new frame: ', success)
+        try:
+            vidcap.set(cv2.CAP_PROP_POS_MSEC, int(count * 1000 * (1 / cfg.sample_rate)))    
+            success,image = vidcap.read()
+            image = Image.fromarray(image)
+            #print ('Read a new frame: ', success)
 
-        if is_frame_redundant(image):
-            print(f"Frame {count} is redundant. Skipping.")
-        else:
-            image.save(f"{path_out}/{count}.png") 
-        count += 1
-
+            if is_frame_redundant(image):
+                print(f"Frame {count} is redundant. Skipping.")
+            else:
+                image.save(f"{path_out}/{count}.png") 
+            count += 1
+        except:
+            print("Exception Occured. Halting image extraction.")
+            return
 
 def stitch_all(path_in, path_out):
     img_filenames = sorted_alphanumeric(os.listdir(path_in))
@@ -52,16 +55,19 @@ def stitch_all(path_in, path_out):
 
     final_image = Image.new(first_image.mode, (first_image.size[0], cfg.allocated_pixels))
     final_image.paste(first_image)
-    
+    final_image.save(f"{path_out}/out.png")
     for i in range(len(img_filenames) - 1):
+        print(f"Processing {i + 1} of {len(img_filenames)} images")
         second_image = Image.open(f"{path_in}/{img_filenames[i + 1]}")
         offset = stitcher.get_stitching_offset(first_image, second_image)
         #update only if passed diff threshold
         if offset == -1:
+            print(f"Ignored {i} due to diff being too high")
             continue
         #paste into final image according to offset
         cur_offset -= offset
         final_image.paste(second_image, (0, cur_offset))
+        final_image.save(f"{path_out}/out.png")
         cur_offset += second_image.size[1]
         first_image = second_image
     mkdir_if_not_exist(path_out)
@@ -72,7 +78,7 @@ def stitch_all(path_in, path_out):
 
 def main():
     mkdir_if_not_exist(cfg.intermediate_path)
-    extract_images(cfg.vid_path, cfg.intermediate_path)
+    #extract_images(cfg.vid_path, cfg.intermediate_path)
     stitch_all(cfg.intermediate_path, cfg.out_path)
 
 main()
