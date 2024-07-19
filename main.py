@@ -6,6 +6,9 @@ from PIL import Image
 import re
 import stitcher
 import cfg
+import shutil
+
+
 def mkdir_if_not_exist(dir : str):
     if not os.path.isdir(dir):
         os.makedirs(dir)
@@ -81,6 +84,7 @@ def stitch_all(path_in, path_out):
 
 
 def main():
+    shutil.rmtree(cfg.intermediate_path)
     mkdir_if_not_exist(cfg.intermediate_path)
     extract_images(cfg.vid_path, cfg.intermediate_path)
     stitch_all(cfg.intermediate_path, cfg.out_path)

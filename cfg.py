@@ -12,6 +12,6 @@ scan_pixels = 1080 - sample_height
 diff_threshold = 99999900000
 allocated_pixels = 1080 * 150
 out_path = "output"
-vid_path = "./Reading the White Album 2 Manga Online Vol.3 [Part 5] [Oms2iOJfgXY].mkv"
+vid_path = "Reading the White Album 2 Manga Online Vol.1 [Part 1] [4lL-wnHJ_4g].mkv"
 intermediate_path = "frames"
 is_black_and_white = True
