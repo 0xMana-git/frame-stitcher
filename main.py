@@ -21,8 +21,8 @@ def is_frame_redundant(image) -> bool:
 
 
 vid_path = "./Reading the White Album 2 Manga Online Vol.3 [Part 5] [Oms2iOJfgXY].mkv"
-out_path = "frames"
-
+intermediate_path = "frames"
+out_path = "output"
 
 def extract_images(path_in, path_out):
     count = 0
@@ -33,19 +33,18 @@ def extract_images(path_in, path_out):
         vidcap.set(cv2.CAP_PROP_POS_MSEC,(count*1000))    # added this line 
         success,image = vidcap.read()
         image = Image.fromarray(image)
-        print ('Read a new frame: ', success)
+        #print ('Read a new frame: ', success)
 
         if is_frame_redundant(image):
-            print("Frame redundant. Skipping.")
+            print(f"Frame {count} is redundant. Skipping.")
         else:
-            
-            image.save(f"{path_out}/frame{count}.jpg")     # save frame as JPEG file
+            image.save(f"{path_out}/{count}.jpg")     # save frame as JPEG file
         count += 1
 
 
 def main():
-    mkdir_if_not_exist(out_path)
-    extract_images(vid_path, out_path)
+    mkdir_if_not_exist(intermediate_path)
+    extract_images(vid_path, intermediate_path)
 
 
 main()
