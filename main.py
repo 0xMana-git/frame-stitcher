@@ -38,7 +38,7 @@ def extract_images(path_in, path_out):
         if is_frame_redundant(image):
             print(f"Frame {count} is redundant. Skipping.")
         else:
-            image.save(f"{path_out}/{count}.jpg")     # save frame as JPEG file
+            image.save(f"{path_out}/{count}.png") 
         count += 1
 
 
