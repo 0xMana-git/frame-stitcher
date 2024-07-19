@@ -55,19 +55,21 @@ def stitch_all(path_in, path_out):
 
     final_image = Image.new(first_image.mode, (first_image.size[0], cfg.allocated_pixels))
     final_image.paste(first_image)
-    final_image.save(f"{path_out}/out.png")
+    #final_image.save(f"{path_out}/out.png")
     for i in range(len(img_filenames) - 1):
         print(f"Processing {i + 1} of {len(img_filenames)} images")
         second_image = Image.open(f"{path_in}/{img_filenames[i + 1]}")
         offset = stitcher.get_stitching_offset(first_image, second_image)
         #update only if passed diff threshold
+        #probably redundant now
         if offset == -1:
             print(f"Ignored {i} due to diff being too high")
             continue
         #paste into final image according to offset
+        #also i think im kinda fucked if the manga scrolled back idk
         cur_offset -= offset
         final_image.paste(second_image, (0, cur_offset))
-        final_image.save(f"{path_out}/out.png")
+        #final_image.save(f"{path_out}/out.png")
         cur_offset += second_image.size[1]
         first_image = second_image
     mkdir_if_not_exist(path_out)
@@ -78,7 +80,7 @@ def stitch_all(path_in, path_out):
 
 def main():
     mkdir_if_not_exist(cfg.intermediate_path)
-    #extract_images(cfg.vid_path, cfg.intermediate_path)
+    extract_images(cfg.vid_path, cfg.intermediate_path)
     stitch_all(cfg.intermediate_path, cfg.out_path)
 
 main()
