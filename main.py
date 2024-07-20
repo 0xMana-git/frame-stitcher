@@ -49,6 +49,13 @@ def strip_redundant(frames_dir):
         if entry_tuple[1]:
             print(f"Removing redundant frame {entry_tuple[0]}")
             os.remove(entry_tuple[0])
+    
+def rename_non_redundant(frames_dir):
+    frames = sorted_alphanumeric(os.listdir(frames_dir))
+    for i in range(len(frames)):
+        frames[i] = f"{frames_dir}/{frames[i]}"
+        frame_new = f"{frames_dir}/{i}.png"
+        os.rename(frames[i], frame_new)
 
 def extract_images(path_in, path_out):
     mkdir_if_not_exist(path_out)
@@ -67,8 +74,9 @@ def stitch_all(path_in, path_out):
     final_image.paste(first_image)
     #final_image.save(f"{path_out}/out.png")
     for i in range(len(img_filenames) - 1):
-        print(f"Processing {i + 1} of {len(img_filenames)} images")
-        second_image = Image.open(f"{path_in}/{img_filenames[i + 1]}")
+        img_name = f"{path_in}/{img_filenames[i + 1]}"
+        print(f"Processing {i + 1} of {len(img_filenames)} images({img_name})")
+        second_image = Image.open(img_name)
         offset = stitcher.get_stitching_offset(first_image, second_image)
         #update only if passed diff threshold
         #probably redundant now
@@ -97,9 +105,9 @@ def main():
         cur_out = f"{cfg.out_path}/{vid.rsplit(".", 1)[0]}"
         print(f"\n\n\nProcessing video {cur_vid}...\n")
 
-        shutil.rmtree(cfg.intermediate_path)
-        extract_images(cur_vid, cfg.intermediate_path)
-
+        #shutil.rmtree(cfg.intermediate_path)
+        #extract_images(cur_vid, cfg.intermediate_path)
+        rename_non_redundant(cfg.intermediate_path)
         stitch_all(cfg.intermediate_path, cur_out)
 
 if __name__ == "__main__":

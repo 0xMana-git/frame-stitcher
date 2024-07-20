@@ -51,7 +51,7 @@ def get_stitching_offset(img0 , img1) -> int:
     diff_tuple = get_diff_concurrent(sample0, img1_array, x_lowbound, x_upbound, range(0, cfg.scan_pixels, cfg.scan_steps))
     diff = diff_tuple[1]
     offset = diff_tuple[0]
-
+    print(f"diff is {diff}")
     if diff > cfg.diff_threshold:
         return -1
     return offset + cfg.sample_height
