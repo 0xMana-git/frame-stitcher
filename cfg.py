@@ -2,7 +2,7 @@
 
 
 #samples per second
-sample_rate = 0.5
+sample_rate = 3
 sample_width = 1000
 sample_height = 200
 centered_sampling = True

@@ -59,7 +59,7 @@ def rename_non_redundant(frames_dir):
 
 def extract_images(path_in, path_out):
     mkdir_if_not_exist(path_out)
-    subprocess.run(["ffmpeg", "-hwaccel", "auto", "-i", path_in, "-r", str( 1 / cfg.sample_rate), f"{path_out}/%d.png"])
+    subprocess.run(["ffmpeg", "-hwaccel", "auto", "-i", path_in, "-r", str(cfg.sample_rate), f"{path_out}/%d.png"])
     strip_redundant(path_out)
     
 
