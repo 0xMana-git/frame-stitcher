@@ -2,3 +2,4 @@ frames
 output
 __pycache__
 *.mkv
+videos_dir

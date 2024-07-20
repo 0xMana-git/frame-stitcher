@@ -7,8 +7,10 @@ import re
 import stitcher
 import cfg
 import shutil
-
-
+import subprocess
+from multiprocessing import Manager, Pool
+from functools import partial
+import globalvars
 def mkdir_if_not_exist(dir : str):
     if not os.path.isdir(dir):
         os.makedirs(dir)
@@ -19,41 +21,46 @@ def sorted_alphanumeric(data):
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(data, key=alphanum_key)
 
-global_redundancy_set = set()
-def is_frame_redundant(image) -> bool:
+
+def is_frame_redundant(shared_dict, image) -> bool:
     row, col = dhash.dhash_row_col(image)
     hashed = dhash.format_hex(row, col)
-    if hashed in global_redundancy_set:
+    if hashed in shared_dict.keys():
         return True
-    global_redundancy_set.add(hashed)
+    shared_dict[hashed] = True
     return False
 
+def is_redundant_subproc(shared_dict, fname) -> bool:
+    with Image.open(fname) as image:
+        return (fname, is_frame_redundant(shared_dict, image))
 
+
+def strip_redundant(frames_dir):
+    manager = Manager()
+    shared_dict = manager.dict()
+    redundant_partial = partial(is_redundant_subproc, shared_dict)
+
+    frames = sorted_alphanumeric(os.listdir(frames_dir))
+    for i in range(len(frames)):
+        frames[i] = f"{frames_dir}/{frames[i]}"
+
+    redundant_files = globalvars.proc_pool.map(redundant_partial, frames)
+    for entry_tuple in redundant_files:
+        if entry_tuple[1]:
+            print(f"Removing redundant frame {entry_tuple[0]}")
+            os.remove(entry_tuple[0])
 
 def extract_images(path_in, path_out):
-    count = 0
-    vidcap = cv2.VideoCapture(path_in)
-    success, image = vidcap.read()
-    success = True
-    while success:
-        try:
-            vidcap.set(cv2.CAP_PROP_POS_MSEC, int(count * 1000 * (1 / cfg.sample_rate)))    
-            success,image = vidcap.read()
-            image = Image.fromarray(image)
-            #print ('Read a new frame: ', success)
+    mkdir_if_not_exist(path_out)
+    subprocess.run(["ffmpeg", "-hwaccel", "auto", "-i", path_in, "-r", str( 1 / cfg.sample_rate), f"{path_out}/%d.png"])
+    strip_redundant(path_out)
+    
 
-            if is_frame_redundant(image):
-                print(f"Frame {count} is redundant. Skipping.")
-            else:
-                image.save(f"{path_out}/{count}.png") 
-            count += 1
-        except:
-            print("Exception Occured. Halting image extraction.")
-            return
-
+        
+    
 def stitch_all(path_in, path_out):
     img_filenames = sorted_alphanumeric(os.listdir(path_in))
-    first_image = Image.open(f"{path_in}/{0}.png")
+    first_image = Image.open(f"{path_in}/{img_filenames[0]}")
     cur_offset = first_image.size[1]
 
     final_image = Image.new(first_image.mode, (first_image.size[0], cfg.allocated_pixels))
@@ -84,9 +91,16 @@ def stitch_all(path_in, path_out):
 
 
 def main():
-    shutil.rmtree(cfg.intermediate_path)
-    mkdir_if_not_exist(cfg.intermediate_path)
-    extract_images(cfg.vid_path, cfg.intermediate_path)
-    stitch_all(cfg.intermediate_path, cfg.out_path)
+    globalvars.proc_pool = Pool(cfg.pool_size)
+    for vid in os.listdir(cfg.vid_path):
+        cur_vid = f"{cfg.vid_path}/{vid}"
+        cur_out = f"{cfg.out_path}/{vid.rsplit(".", 1)[0]}"
+        print(f"\n\n\nProcessing video {cur_vid}...\n")
 
-main()
+        shutil.rmtree(cfg.intermediate_path)
+        extract_images(cur_vid, cfg.intermediate_path)
+
+        stitch_all(cfg.intermediate_path, cur_out)
+
+if __name__ == "__main__":
+    main()
