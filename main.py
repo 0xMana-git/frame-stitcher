@@ -78,7 +78,7 @@ def stitch_all(path_in, path_out):
     final_image_array = np.zeros((img_width, cfg.allocated_pixels, 3), "uint8")
     final_image_array[:, 0:first_image.size[1], :] = np.array(first_image).swapaxes(0,1)
 
-    save_array_as_image(final_image_array, f"{path_out}/out.png")   
+    #save_array_as_image(final_image_array, f"{path_out}/out.png")   
     for i in range(1, len(img_filenames)):
         img_name = f"{path_in}/{img_filenames[i]}"
         print(f"Processing {i} of {len(img_filenames)} images({img_name})")
