@@ -8,7 +8,8 @@ import stitcher
 import cfg
 import shutil
 import subprocess
-from multiprocessing import Manager, Pool
+from multiprocessing import Manager
+from multiprocessing.pool import ThreadPool
 from functools import partial
 import globalvars
 def mkdir_if_not_exist(dir : str):
@@ -99,7 +100,7 @@ def stitch_all(path_in, path_out):
 
 
 def main():
-    globalvars.proc_pool = Pool(cfg.pool_size)
+    globalvars.proc_pool = ThreadPool(cfg.pool_size)
     for vid in os.listdir(cfg.vid_path):
         cur_vid = f"{cfg.vid_path}/{vid}"
         cur_out = f"{cfg.out_path}/{vid.rsplit(".", 1)[0]}"

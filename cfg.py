@@ -15,4 +15,4 @@ out_path = "output"
 vid_path = "videos_dir"
 intermediate_path = "frames"
 is_black_and_white = True
-pool_size = 8
+pool_size = 32
